@@ -3,24 +3,20 @@
 	<head>
 		<script src="coi-serviceworker.js"></script>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>股票仙子</title>
 		<style>
-/* 基礎設定：確保畫布與網頁完全重合 */
 html, body, #canvas {
 	margin: 0;
 	padding: 0;
 	border: 0;
-	/* 這裡強制設定背景色，防止 Godot 透明時透出黑色 */
-	background-color: $GODOT_BG_COLOR !important;
 }
 
 body {
-	color: #555555;
+	color: white;
+	background-color: black;
 	overflow: hidden;
 	touch-action: none;
-	/* 確保背景色填滿整個螢幕 */
-	background-attachment: fixed;
 }
 
 #canvas {
@@ -43,14 +39,12 @@ body {
 }
 
 #status {
-	/* 載入中畫面的背景色 */
-	background-color: $GODOT_BG_COLOR;
+	background-color: #e8e0da;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	visibility: hidden;
-	z-index: 2;
 }
 
 #status-splash {
@@ -94,11 +88,12 @@ body {
 	overflow: hidden;
 	padding: 1rem;
 	text-align: center;
-	z-index: 3;
+	z-index: 1;
 }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
-		<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -117,7 +112,6 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-/* {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":775352,"index.wasm":37630565},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4} */
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":775352,"index.wasm":37630565},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
@@ -181,6 +175,7 @@ const engine = new Engine(GODOT_CONFIG);
 			} catch (err) {
 				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
 			}
+			// There's a chance that installing the service worker would fix the issue
 			Promise.race([
 				serviceWorkerRegistrationPromise.then((registration) => {
 					if (registration != null) {
@@ -188,15 +183,18 @@ const engine = new Engine(GODOT_CONFIG);
 					}
 					return registration;
 				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
 				new Promise((resolve) => {
 					setTimeout(() => resolve(), 2000);
 				}),
 			]).then(() => {
+				// Reload if there was no error.
 				window.location.reload();
 			}).catch((err) => {
 				console.error('Error while registering service worker:', err);
 			});
 		} else {
+			// Display the message as usual
 			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
 			displayFailureNotice(missingMsg + missing.join('\n'));
 		}
@@ -220,3 +218,5 @@ const engine = new Engine(GODOT_CONFIG);
 		</script>
 	</body>
 </html>
+
+
